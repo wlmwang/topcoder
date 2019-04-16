@@ -1,0 +1,35 @@
+rm -rf a.out
+rm -rf main.o
+g++ -c main.cpp -o main.o -O3 -Wall -Wshadow -Wno-unused-variable -Wfloat-equal -Wsign-compare -Wconversion -msse4 -DNDEBUG -std=gnu++0x
+In file included from main.cpp:10:
+./solution.h:54:9: error: use of undeclared identifier 'cout'; did you mean 'count'?
+        cout << "Error opening file" << endl;
+        ^~~~
+        count
+/Library/Developer/CommandLineTools/usr/include/c++/v1/algorithm:1244:1: note: 'count' declared here
+count(_InputIterator __first, _InputIterator __last, const _Tp& __value_)
+^
+In file included from main.cpp:10:
+./solution.h:54:9: error: reference to overloaded function could not be resolved; did you mean to call it?
+        cout << "Error opening file" << endl;
+        ^~~~
+/Library/Developer/CommandLineTools/usr/include/c++/v1/algorithm:1244:1: note: possible target for call
+count(_InputIterator __first, _InputIterator __last, const _Tp& __value_)
+^
+In file included from main.cpp:10:
+./solution.h:61:9: error: use of undeclared identifier 'cout'; did you mean 'count'?
+        cout << buffer << endl;
+        ^~~~
+        count
+/Library/Developer/CommandLineTools/usr/include/c++/v1/algorithm:1244:1: note: 'count' declared here
+count(_InputIterator __first, _InputIterator __last, const _Tp& __value_)
+^
+In file included from main.cpp:10:
+./solution.h:61:9: error: reference to overloaded function could not be resolved; did you mean to call it?
+        cout << buffer << endl;
+        ^~~~
+/Library/Developer/CommandLineTools/usr/include/c++/v1/algorithm:1244:1: note: possible target for call
+count(_InputIterator __first, _InputIterator __last, const _Tp& __value_)
+^
+4 errors generated.
+make: *** [main.o] Error 1
