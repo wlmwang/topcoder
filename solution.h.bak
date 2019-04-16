@@ -6,7 +6,7 @@
 #include <map>
 #include <set>
 #include <unordered_map>
-#include <unordered_set>
+//#include <unordered_set>
 #include <sstream>
 #include <algorithm>
 #include <fstream>
@@ -579,7 +579,7 @@ bool LineMergeLine(int32_t lhs, int32_t rhs) {
     return true;
 }
 
-bool LineNodeIdsSet(const LineNode_t& v, unordered_set<string>& result) {
+bool LineNodeIdsSet(const LineNode_t& v, set<string>& result) {
     LineNode_t* lhead = globalLinesIds.lines.lines;
     LineNode_t *lptr = lhead + v.curoff;
 
@@ -608,7 +608,7 @@ bool LineNodeIdsSet(const LineNode_t& v, unordered_set<string>& result) {
 }
 
 int32_t LinesNode_t::getNextLineIds(vector<string>& ids) {
-    unordered_set<string> idset;
+    set<string> idset;
 
     LineNode_t *head = globalLinesIds.lines.lines;
     LineNode_t *node = NULL;
@@ -734,7 +734,7 @@ private:
     vector<string> m_oneRow;
 
     vector<string> m_oneset;
-    unordered_map<string, unordered_set<string>> m_maps;
+    unordered_map<string, vector<string>> m_maps;
     unordered_map<string, bool> m_traversed;
 };
 
@@ -774,12 +774,12 @@ inline void Solution::process(const std::string &inputPath) {
 }
 
 void Solution::handleRow1() {
-    m_maps[m_oneRow[0]].insert(m_oneRow[1]);
-    m_maps[m_oneRow[1]].insert(m_oneRow[0]);
+    m_maps[m_oneRow[0]].push_back(m_oneRow[1]);
+    m_maps[m_oneRow[1]].push_back(m_oneRow[0]);
 }
 
 void Solution::outputRow1() {
-    for (unordered_map<string, unordered_set<string>>::iterator it = m_maps.begin(); it != m_maps.end(); it++) {
+    for (unordered_map<string, vector<string>>::iterator it = m_maps.begin(); it != m_maps.end(); it++) {
         if (m_traversed.find(it->first) != m_traversed.end()) {
             continue;
         }
@@ -797,7 +797,7 @@ void Solution::deepFind1(const string& key) {
     m_traversed[key] = true;
     m_oneset.push_back(key);
 
-    for (unordered_set<string>::iterator it = m_maps[key].begin(); it != m_maps[key].end(); it++) {
+    for (vector<string>::iterator it = m_maps[key].begin(); it != m_maps[key].end(); it++) {
         if (m_traversed.find(*it) != m_traversed.end()) {
             continue;
         }
