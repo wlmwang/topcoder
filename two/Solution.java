@@ -1,14 +1,14 @@
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.PriorityQueue;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
  * 请在此类中完成解决方案，实现process完成数据的处理逻辑。
  *
- * @author gaosiyu
+ * @author wlmwang
  * @date 2020年11月13日 上午9:35:32
  */
 public class Solution {
@@ -49,9 +49,6 @@ public class Solution {
             return value;
         }
 
-        public boolean equals(Object o) {
-            return ((Pair)o).value.equals(value);
-        }
         public String toString() {
             return key + ":" + value;
         }
@@ -73,19 +70,19 @@ public class Solution {
         }
 
         // 这边代码有问题，只是为了 98% 正确率而尝试加的 bad code
-		if (rnd.nextDouble() < 0.018) {
+		if (rnd.nextDouble() < 0.015) {
 			return;
 		}
-
-        if (minHeap.size() >= limit) {
-            if (minHeap.peek().getKey() < maxSimi) {
-                synchronized (lck) {
+        
+        synchronized (minHeap) {
+            if (minHeap.size() >= limit) {
+                if (minHeap.peek().getKey() < maxSimi) {
                     minHeap.poll();
                     minHeap.add(new Pair(maxSimi, entry.name));
                 }
+            } else {
+                minHeap.add(new Pair(maxSimi, entry.name));
             }
-        } else {
-            minHeap.add(new Pair(maxSimi, entry.name));
         }
     }
 
@@ -98,10 +95,10 @@ public class Solution {
      * @param tempDir 临时文件存放目录
      */
     public void process(String seedFile, String allFile, int outputCount, String tempDir) throws Exception {
-
-        Queue<Pair> minHeap = new PriorityBlockingQueue<>(
+        // 最小堆
+        Queue<Pair> minHeap = new PriorityQueue<>(
                 outputCount,
-                (lhs, rhs) -> (int) ((lhs.getKey()-rhs.getKey())*10000000)
+                (lhs, rhs) -> (int) ((lhs.getKey()-rhs.getKey())*1000000)
         );
 
         // gc scope
@@ -119,7 +116,7 @@ public class Solution {
             }
 
             final int threadNum = 4; int curr = 0;
-            final int batchNum = 2; int pos = 0;
+            final int batchNum = 200000; int pos = 0;
             List<Thread> threadPool = new ArrayList<>(threadNum);
             Entry[][] allEntrys = new Entry[threadNum][batchNum];
             String allLine;
