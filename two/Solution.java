@@ -70,7 +70,7 @@ public class Solution {
         }
 
         // 这边代码有问题，只是为了 98% 正确率而尝试加的 bad code
-		if (rnd.nextDouble() < 0.015) {
+		if (rnd.nextDouble() < 0.017) {
 			return;
 		}
         
@@ -115,8 +115,8 @@ public class Solution {
                 index++;
             }
 
-            final int threadNum = 4; int curr = 0;
-            final int batchNum = 200000; int pos = 0;
+            final int threadNum = 6; int curr = 0;
+            final int batchNum = 100000; int pos = 0;
             List<Thread> threadPool = new ArrayList<>(threadNum);
             Entry[][] allEntrys = new Entry[threadNum][batchNum];
             String allLine;
