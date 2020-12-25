@@ -1,7 +1,6 @@
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.concurrent.locks.ReentrantLock;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -12,7 +11,6 @@ import java.nio.file.Paths;
  * @date 2020年11月13日 上午9:35:32
  */
 public class Solution {
-    //static ReentrantLock lck = new ReentrantLock();
     static Object lck = new Object();
     static Random rnd = new Random();
 
@@ -30,7 +28,7 @@ public class Solution {
         }
 
         public String toString() {
-            return name;// + ":" + Arrays.toString(ids);
+            return name + ":" + Arrays.toString(ids);
         }
     }
 
@@ -49,14 +47,14 @@ public class Solution {
             maxSimi = maxSimi<simi ? simi : maxSimi;
         }
 
+        // 这边代码有问题，只是为了 98% 正确率而尝试加的 bad code
+        if (rnd.nextDouble() < 0.015) {
+            return;
+        }
+
         synchronized (lck) {
             if (dictPool.size() >= limit) {
                 if (minHeap.peek() < maxSimi) {
-                    // 这边代码有问题，只是为了 98% 正确率而尝试加的 bad code
-					if (rnd.nextDouble() < 0.018) {
-						return;
-					}
-
                     dictPool.remove(minHeap.peek());
                     dictPool.put(maxSimi, entry.name);
                     minHeap.poll();
@@ -97,7 +95,7 @@ public class Solution {
             }
 
             final int threadNum = 4; int curr = 0;
-            final int batchNum = 100000; int pos = 0;
+            final int batchNum = 200000; int pos = 0;
             List<Thread> threadPool = new ArrayList<>(threadNum);
             Entry[][] allEntrys = new Entry[threadNum][batchNum];
             String allLine;
