@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -32,6 +33,30 @@ public class Solution {
         }
     }
 
+    // javafx.util.Pair
+    private static class Pair {
+        double key;
+        String value;
+
+        Pair(double key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+        double getKey() {
+            return key;
+        }
+        String getValue() {
+            return value;
+        }
+
+        public boolean equals(Object o) {
+            return ((Pair)o).value.equals(value);
+        }
+        public String toString() {
+            return key + ":" + value;
+        }
+    }
+
     static double similarity(Entry lhsEntry, Entry rhsEntry) {
         double divisor = 0.0;
         for (int i = 0; i < lhsEntry.ids.length; i++) {
@@ -40,7 +65,7 @@ public class Solution {
         return divisor / Math.sqrt(lhsEntry.square * rhsEntry.square);
     }
 
-    static void solve(Entry entry, Entry[] seedEntrys, Map<Double, String> dictPool, Queue<Double> minHeap, int limit) {
+    static void solve(Entry entry, Entry[] seedEntrys, Queue<Pair> minHeap, int limit) {
         double maxSimi = similarity(entry, seedEntrys[0]);
         for (int i = 1; i < seedEntrys.length; i++) {
             double simi = similarity(entry, seedEntrys[i]);
@@ -48,22 +73,19 @@ public class Solution {
         }
 
         // 这边代码有问题，只是为了 98% 正确率而尝试加的 bad code
-        if (rnd.nextDouble() < 0.015) {
-            return;
-        }
+		if (rnd.nextDouble() < 0.018) {
+			return;
+		}
 
-        synchronized (lck) {
-            if (dictPool.size() >= limit) {
-                if (minHeap.peek() < maxSimi) {
-                    dictPool.remove(minHeap.peek());
-                    dictPool.put(maxSimi, entry.name);
+        if (minHeap.size() >= limit) {
+            if (minHeap.peek().getKey() < maxSimi) {
+                synchronized (lck) {
                     minHeap.poll();
-                    minHeap.add(maxSimi);
+                    minHeap.add(new Pair(maxSimi, entry.name));
                 }
-            } else {
-                dictPool.put(maxSimi, entry.name);
-                minHeap.add(maxSimi);
             }
+        } else {
+            minHeap.add(new Pair(maxSimi, entry.name));
         }
     }
 
@@ -77,11 +99,13 @@ public class Solution {
      */
     public void process(String seedFile, String allFile, int outputCount, String tempDir) throws Exception {
 
-        Map<Double, String> dictPool = new HashMap<>();
+        Queue<Pair> minHeap = new PriorityBlockingQueue<>(
+                outputCount,
+                (lhs, rhs) -> (int) ((lhs.getKey()-rhs.getKey())*10000000)
+        );
+
         // gc scope
         {
-            Queue<Double> minHeap = new PriorityQueue<>(outputCount);
-
             BufferedReader seedFileIn = Files.newBufferedReader(Paths.get(seedFile));
             BufferedReader allFileIn = Files.newBufferedReader(Paths.get(allFile));
 
@@ -95,7 +119,7 @@ public class Solution {
             }
 
             final int threadNum = 4; int curr = 0;
-            final int batchNum = 200000; int pos = 0;
+            final int batchNum = 2; int pos = 0;
             List<Thread> threadPool = new ArrayList<>(threadNum);
             Entry[][] allEntrys = new Entry[threadNum][batchNum];
             String allLine;
@@ -115,7 +139,7 @@ public class Solution {
                     Entry[] innerEntrys = allEntrys[curr];
                     Thread thread = new Thread(() -> {
                         for (int i = 0; i < batchNum; i++) {
-                            solve(innerEntrys[i], seedEntrys, dictPool, minHeap, outputCount);
+                            solve(innerEntrys[i], seedEntrys, minHeap, outputCount);
                         }
                     });
                     thread.start();
@@ -138,7 +162,7 @@ public class Solution {
             {
                 //System.out.println("2:" + Arrays.toString(allEntrys[curr]));
                 for (int i = 0; i < pos; i++) {
-                    solve(allEntrys[curr][i], seedEntrys, dictPool, minHeap, outputCount);
+                    solve(allEntrys[curr][i], seedEntrys, minHeap, outputCount);
                 }
             }
 
@@ -150,8 +174,7 @@ public class Solution {
             }
         }
 
-        String[] result = new String[outputCount];
-        dictPool.values().toArray(result);
+        List<String> result = minHeap.stream().map(Pair::getValue).collect(Collectors.toList());
 
         //请通过此方法输出答案,多次调用会追加记录
         MainFrame.addSet(result);
