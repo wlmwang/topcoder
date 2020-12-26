@@ -69,9 +69,9 @@ public class Solution {
         }
 
         // 这边代码是有问题的，只是为了 98% 正确率而尝试加的bad code
-		if (rnd.nextDouble() < 0.015) {
-			return;
-		}
+		// if (rnd.nextDouble() < 0.015) {
+		// 	return;
+		// }
         
         synchronized (minHeap) {
             if (minHeap.size() >= limit) {
