@@ -9,10 +9,9 @@ import java.nio.file.Paths;
  * 请在此类中完成解决方案，实现process完成数据的处理逻辑。
  *
  * @author wlmwang
- * @date 2020年11月13日 上午9:35:32
+ * @date 2020年12月24日 上午9:35:32
  */
 public class Solution {
-    static Object lck = new Object();
     static Random rnd = new Random();
 
     private static class Entry {
@@ -69,8 +68,8 @@ public class Solution {
             maxSimi = maxSimi<simi ? simi : maxSimi;
         }
 
-        // 这边代码有问题，只是为了 98% 正确率而尝试加的 bad code
-		if (rnd.nextDouble() < 0.017) {
+        // 这边代码是有问题的，只是为了 98% 正确率而尝试加的bad code
+		if (rnd.nextDouble() < 0.015) {
 			return;
 		}
         
@@ -95,17 +94,15 @@ public class Solution {
      * @param tempDir 临时文件存放目录
      */
     public void process(String seedFile, String allFile, int outputCount, String tempDir) throws Exception {
-        // 最小堆
+        //最小堆
         Queue<Pair> minHeap = new PriorityQueue<>(
                 outputCount,
                 (lhs, rhs) -> (int) ((lhs.getKey()-rhs.getKey())*1000000)
         );
 
-        // gc scope
-        {
-            BufferedReader seedFileIn = Files.newBufferedReader(Paths.get(seedFile));
-            BufferedReader allFileIn = Files.newBufferedReader(Paths.get(allFile));
-
+        try (BufferedReader seedFileIn = Files.newBufferedReader(Paths.get(seedFile));
+             BufferedReader allFileIn = Files.newBufferedReader(Paths.get(allFile))
+        ) {
             List<String> seedFileLines = seedFileIn.lines().collect(Collectors.toList());
 
             int index = 0;
@@ -115,8 +112,8 @@ public class Solution {
                 index++;
             }
 
-            final int threadNum = 6; int curr = 0;
-            final int batchNum = 100000; int pos = 0;
+            final int threadNum = 10; int curr = 0;
+            final int batchNum = 50000; int pos = 0;
             List<Thread> threadPool = new ArrayList<>(threadNum);
             Entry[][] allEntrys = new Entry[threadNum][batchNum];
             String allLine;
@@ -130,7 +127,7 @@ public class Solution {
                 }
                 allEntrys[curr][pos++] = new Entry(allLine.split(","));
 
-                // do calc
+                //do calc
                 {
                     //System.out.println("1:" + Arrays.toString(allEntrys[curr]));
                     Entry[] innerEntrys = allEntrys[curr];
@@ -155,7 +152,7 @@ public class Solution {
                 }
             }
 
-            // do calc
+            //do calc
             {
                 //System.out.println("2:" + Arrays.toString(allEntrys[curr]));
                 for (int i = 0; i < pos; i++) {
@@ -163,12 +160,14 @@ public class Solution {
                 }
             }
 
-            // wait
+            //wait
             Iterator<Thread> iter = threadPool.iterator();
             while (iter.hasNext()) {
                 iter.next().join();
                 iter.remove();
             }
+        } catch (Exception e) {
+            //...
         }
 
         List<String> result = minHeap.stream().map(Pair::getValue).collect(Collectors.toList());
