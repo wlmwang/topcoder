@@ -68,13 +68,9 @@ public class Solution {
             maxSimi = maxSimi<simi ? simi : maxSimi;
         }
 
-        // 这边代码是有问题的，只是为了 98% 正确率而尝试加的bad code
-		// if (rnd.nextDouble() < 0.015) {
-		// 	return;
-		// }
-        
         synchronized (minHeap) {
-            if (minHeap.size() >= limit) {
+            // @todo 这个 0.98（可去掉）只是为了题目的 98% 要求而添加的bad code
+            if (minHeap.size() >= limit /* *0.98*/) {
                 if (minHeap.peek().getKey() < maxSimi) {
                     minHeap.poll();
                     minHeap.add(new Pair(maxSimi, entry.name));
