@@ -108,8 +108,8 @@ public class Solution {
                 index++;
             }
 
-            final int threadNum = 10; int curr = 0;
-            final int batchNum = 50000; int pos = 0;
+            final int threadNum = 4; int curr = 0;
+            final int batchNum = 100000; int pos = 0;
             List<Thread> threadPool = new ArrayList<>(threadNum);
             Entry[][] allEntrys = new Entry[threadNum][batchNum];
             String allLine;
@@ -117,11 +117,11 @@ public class Solution {
                 if (allEntrys[curr] == null) {
                     allEntrys[curr] = new Entry[batchNum];
                 }
-                if (pos < batchNum - 1) {
-                    allEntrys[curr][pos++] = new Entry(allLine.split(","));
+
+                allEntrys[curr][pos++] = new Entry(allLine.split(","));
+                if (pos < batchNum) {
                     continue;
                 }
-                allEntrys[curr][pos++] = new Entry(allLine.split(","));
 
                 //do calc
                 {
